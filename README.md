@@ -6,4 +6,5 @@ details of any one particular platform's implementation of USB. This is
 useful in robotics and device automation and allows developers to write
 more portable code.
 
-More information can be found in the generated documentation.
+More information can be found in the
+[documentation](http://python-usbinfo.readthedocs.org/en/latest/).

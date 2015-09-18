@@ -87,6 +87,11 @@ Version 1.0
 * Added ``usbtool`` script to allow command line usage of :mod:`.usbinfo`
 * Added documentation
 
+Pexpect is developed on
+`Github <https://github.com/jeffherman/python-usbinfo>`_.
+Please report `issues <https://github.com/jeffherman/python-usbinfo/issues>`_
+there as well.
+
 Indices and tables
 ==================
 
