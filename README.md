@@ -7,4 +7,4 @@ useful in robotics and device automation and allows developers to write
 more portable code.
 
 More information can be found in the
-[documentation](http://python-usbinfo.readthedocs.org/en/latest/).
+[documentation](http://usbinfo.readthedocs.org/en/latest/).
