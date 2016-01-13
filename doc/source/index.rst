@@ -27,12 +27,12 @@ usbinfo module
 
    .. autofunction:: usbinfo
 
-Invocation of ``usbtool`` command line tool
+Invocation of ``usbinfo`` command line tool
 ===========================================
 
-The :program:`usbtool` allows for gathering of information of endpoints on
+The :program:`usbinfo` allows for gathering of information of endpoints on
 the USB subsystem from the command line. When invoked without any arguments,
-:program:`usbtool` prints a tabular representation of attached USB endpoints:
+:program:`usbinfo` prints a tabular representation of attached USB endpoints:
 
 .. code-block:: none
 
@@ -57,9 +57,9 @@ the USB subsystem from the command line. When invoked without any arguments,
      0930:6545 Kingston     DataTraveler 2.0                   AC221C280D9FFEABC85A1812
      0930:6545 Kingston     DataTraveler 2.0                   AC221C280D9FFEABC85A1812 0   /dev/disk2s1 => /Volumes/KINGSTON
 
-The :program:`usbtool` script has several options:
+The :program:`usbinfo` script has several options:
 
-.. program:: usbtool
+.. program:: usbinfo
 
 .. option:: --csv
 
@@ -84,7 +84,7 @@ Version 1.0
 
 * Added :mod:`.usbinfo` allowing scripts to obtain information from USB
   subsystem.
-* Added ``usbtool`` script to allow command line usage of :mod:`.usbinfo`
+* Added ``usbinfo`` script to allow command line usage of :mod:`.usbinfo`
 * Added documentation
 
 Pexpect is developed on `Github <https://github.com/google/usbinfo>`_.
