@@ -149,6 +149,7 @@ def _parse_options(args):
         Set default values for arguments not available on certain platform.
         """
         def __init__(self):
+            self.csv = False
             self.endpoints = False
             self.endpoint_total = False
 

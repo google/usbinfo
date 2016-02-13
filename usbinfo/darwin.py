@@ -17,12 +17,20 @@ Implementation of ``usbinfo`` for OS X-based systems.
 """
 
 import copy
+import platform
 import subprocess
 
 from .posix import get_mounts
 
+# platform.mac_ver()'s first tuple element encodes the OS X version,
+# such as 10.11.3.
+OSX_VERSION_STR = platform.mac_ver()[0]
+OSX_VERSION_MAJOR_INT, \
+OSX_VERSION_MINOR_INT, \
+OSX_VERSION_MICRO_INT = [int(part) for part in OSX_VERSION_STR.split('.')]
 
-def _ioreg_usb_devices():
+
+def _ioreg_usb_devices(nodename=None):
     """Returns a list of USB device tree from ioreg"""
     import plistlib
 
@@ -34,10 +42,12 @@ def _ioreg_usb_devices():
             return plistlib.readPlistFromString(output)
         return []
 
-    xhci = _ioreg('AppleUSBXHCI')
-    ehci = _ioreg('AppleUSBEHCI')
-
-    ioreg = xhci + ehci
+    if nodename is None:
+        xhci = _ioreg('AppleUSBXHCI')
+        ehci = _ioreg('AppleUSBEHCI')
+        ioreg = xhci + ehci
+    else:
+        ioreg = _ioreg(nodename)
 
     def _usb_device(node):
         """Recursively find USB devices and return a list of them"""
@@ -95,12 +105,34 @@ def _extra_if_info(node):
     return info
 
 
+def _match_node_property(node, key, value):
+    """Recursively search node to find an entry that matches key and value.
+       Return matched entry.
+    """
+    retval = None
+
+    for child in node.get('IORegistryEntryChildren', []):
+        if node.get(key) == value:
+            retval = node
+            break
+
+        retval = _match_node_property(child, key, value)
+        if retval is not None:
+            break
+
+    return retval
+
+
 def usbinfo():
     """Return a list of device and interface information for each USB device.
     """
     info_list = []
 
     _mounts = get_mounts()
+
+    if OSX_VERSION_MINOR_INT >= 11:
+        _el_capitan_extras = \
+                _ioreg_usb_devices('XHC1') + _ioreg_usb_devices('EHC1')
 
     for node in _ioreg_usb_devices():
         # Capture device-level information
@@ -143,11 +175,28 @@ def usbinfo():
                     'bNumEndpoints': str(child['bNumEndpoints'])
                 })
 
+                # On El Capitan (and higher), devname is in a separate tree
+                # under 'XHC1' or 'EHC1'. We first need to find the
+                # corresponding node under these trees, then run _extra_if_info
+                # to fill in the extra information.
+                if OSX_VERSION_MINOR_INT >= 11:
+                    for extra_node in _el_capitan_extras:
+                        _node = _match_node_property(
+                            extra_node,
+                            'AppleUSBAlternateServiceRegistryID',
+                            child.get('IORegistryEntryID')
+                        )
+
+                        if _node is not None:
+                            extras = _extra_if_info(_node)
+                            ifinfo.update(extras)
+                            break
+
                 extras = _extra_if_info(child)
                 ifinfo.update(extras)
 
-                if 'devname' in extras:
-                    mount = _mounts.get(extras['devname'])
+                if 'devname' in ifinfo:
+                    mount = _mounts.get(ifinfo['devname'])
                     if mount:
                         ifinfo['mount'] = mount
 

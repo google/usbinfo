@@ -33,7 +33,18 @@ def usbinfo():
     context = pyudev.Context()
     devices = context.list_devices().match_property('ID_BUS', 'usb')
 
-    for device in devices:
+    device_it = devices.__iter__()
+
+    while 1:
+        try:
+            # We need to manually get the next item in the iterator because
+            # pyudev.device may throw an exception
+            device = device_it.next()
+        except pyudev.device.DeviceNotFoundError:
+            continue
+        except StopIteration:
+            break
+
         devinfo = {
             'bInterfaceNumber': device.get('ID_USB_INTERFACE_NUM', u''),
             'iManufacturer': device.get('ID_VENDOR', u''),
@@ -41,7 +52,7 @@ def usbinfo():
             'iProduct': device.get('ID_MODEL', u''),
             'idProduct': device.get('ID_MODEL_ID', u''),
             'iSerialNumber': device.get('ID_SERIAL_SHORT', u''),
-            'devname': device.get('DEVNAME', ''),
+            'devname': device.get('DEVNAME', u''),
         }
 
         mount = _mounts.get(device.get('DEVNAME'))
