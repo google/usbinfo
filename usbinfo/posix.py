@@ -24,8 +24,8 @@ def get_mounts():
     """Return a dictionary of mounted partitions"""
     mounts = dict()
 
-    pat = re.compile(r'([^\s]*) on (.*?) (?:\(|type)')
-    for line in subprocess.check_output(['mount']).split('\n'):
+    pat = re.compile(br'([^\s]*) on (.*?) (?:\(|type)')
+    for line in subprocess.check_output(['mount']).split(b'\n'):
         match = pat.match(line)
         if match:
             mounts[match.group(1)] = match.group(2)
