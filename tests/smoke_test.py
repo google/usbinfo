@@ -22,7 +22,9 @@ This test fixture checks basic functionality of the ``usbinfo`` package.
 import logging
 import unittest
 
+
 class SmokeTest(unittest.TestCase):
+
     """
     Test fixture for basic smoke tests.
     """
@@ -67,11 +69,16 @@ class SmokeTest(unittest.TestCase):
 
             # Check for each compulsory attribute
             for attr in attrs:
-                self.assertTrue(device.has_key(attr),
+                self.assertTrue(attr in device,
                                 'Device missing attribute %s' % attr)
-                self.assertTrue(isinstance(device.get(attr), basestring),
-                                'Attribute %s is not a basestring' % attr)
+                # basestring throw Exception NameError in python3
+                try:
+                    isinstance('', basestring)
+                    self.assertTrue(isinstance(device.get(attr), basestring),
+                                    'Attribute %s is not a basestring' % attr)
+                except NameError:
+                    self.assertTrue(isinstance(device.get(attr), str),
+                                    'Attribute %s is not a basestring' % attr)
 
 if __name__ == '__main__':
     unittest.main()
-
