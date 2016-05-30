@@ -130,7 +130,7 @@ def print_standard(endpoints=False):
         if 'mount' in dev:
             line += ' => {mount}'.format(mount=dev['mount'])
 
-        print line
+        print (line)
 
 
 def endpoints_total():
@@ -182,7 +182,7 @@ def main(args=None):
     options = _parse_options(args)
 
     if options.endpoint_total:
-        print endpoints_total()
+        print (endpoints_total())
     elif options.csv:
         print_csv(endpoints=options.endpoints)
     else:
