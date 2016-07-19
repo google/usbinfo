@@ -10,7 +10,7 @@ more portable code.
 Installation
 ============
 
-This version of USBInfo requires Python 2.6+ or Python 3.4+ running on a
+This version of USBInfo requires Python 2.6 or above running on a
 POSIX-compliant system.
 
 USBInfo is on PyPI and can be installed using::
@@ -90,6 +90,17 @@ Version 1.0
 Pexpect is developed on `Github <https://github.com/google/usbinfo>`_.
 Please report `issues <https://github.com/google/usbinfo/issues>`_ there as
 well.
+
+Version 1.0.1
+`````````````
+
+* Fix to include ``devname`` when running El Capitan
+
+Version 1.0.2
+`````````````
+
+* Added Python 3 support
+* Convert readthedocs.org links to use readthedocs.io
 
 Indices and tables
 ==================
