@@ -10,7 +10,7 @@ more portable code.
 Installation
 ============
 
-This version of USBInfo requires Python 2.6 or above running on a
+This version of USBInfo requires Python 2.6+ or Python 3.4+ running on a
 POSIX-compliant system.
 
 USBInfo is on PyPI and can be installed using::
