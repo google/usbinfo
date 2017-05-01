@@ -38,9 +38,13 @@ def _ioreg_usb_devices(nodename=None):
         """Run ioreg command on specific node name"""
         cmd = ['ioreg', '-a', '-l', '-r', '-n', nodename]
         output = subprocess.check_output(cmd)
+        plist_data = []
         if output:
-            return plistlib.readPlistFromString(output)
-        return []
+            try:
+                plist_data = plistlib.readPlistFromString(output)
+            except AttributeError as e:
+                plist_data = plistlib.loads(output)
+        return plist_data
 
     if nodename is None:
         xhci = _ioreg('AppleUSBXHCI')
@@ -97,7 +101,7 @@ def _extra_if_info(node):
     info = {}
 
     for child in node.get('IORegistryEntryChildren', []):
-        for class_name, handler in ioclass_handlers.iteritems():
+        for class_name, handler in iter(ioclass_handlers.items()):
             if child.get('IOObjectClass') == class_name:
                 info.update(handler(child))
         info.update(_extra_if_info(child))
