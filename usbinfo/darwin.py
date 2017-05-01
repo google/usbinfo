@@ -101,7 +101,7 @@ def _extra_if_info(node):
     info = {}
 
     for child in node.get('IORegistryEntryChildren', []):
-        for class_name, handler in ioclass_handlers.items():
+        for class_name, handler in iter(ioclass_handlers.items()):
             if child.get('IOObjectClass') == class_name:
                 info.update(handler(child))
         info.update(_extra_if_info(child))
