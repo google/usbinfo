@@ -30,14 +30,23 @@ OSX_VERSION_MAJOR_INT, \
 OSX_VERSION_MINOR_INT, \
 OSX_VERSION_MICRO_INT = [int(part) for part in OSX_VERSION_STR.split('.')]
 
+sanitize_pattern = re.compile(r'^(\s*?\<string\>)(.*?)(\<\/string\>.*?)$')
 
 def _sanitize_xml(data):
-    pattern = re.compile(r'^(\s*?\<string\>)(.*?)(\<\/string\>.*?)$')
+    """Takes an plist (xml) and checks <string> defintions for control characters.
+
+       If a control character is found, the string is converted to hexidecimal.
+       For ST-Link devices, this properly displays the serial number, which 
+       is eroneously encoded as binary data, which causes the plistlib XML parser
+       to crash.
+
+       Returns the same document, with any mis-encoded <string> values converted 
+       to ascii hex."""
     output = []
 
     for i, line in enumerate(data.split('\n')):
         chunk = line.decode('utf-8')
-        match = re.match(pattern, chunk)
+        match = re.match(sanitize_pattern, chunk)
         if match:
             start = match.group(1)
             middle = match.group(2)
