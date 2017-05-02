@@ -53,15 +53,16 @@ def _sanitize_xml(data):
                 new_line = '{start}{middle}{end}'.format(start=start,
                                                          middle=middle,
                                                          end=end)
-                output.append(new_line)
+                output.append(new_line.encode('utf-8'))
             else:
+                # Already encoded.
                 output.append(line)
         else:
+            # Already encoded
             output.append(line)
     output = '\n'.join(output)
 
-    return output.encode('utf-8')
-
+    return output
 
 def _ioreg_usb_devices(nodename=None):
     """Returns a list of USB device tree from ioreg"""
