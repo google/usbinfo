@@ -18,6 +18,7 @@ Implementation of ``usbinfo`` for OS X-based systems.
 
 import copy
 import platform
+import re
 import subprocess
 
 from .posix import get_mounts
@@ -30,6 +31,38 @@ OSX_VERSION_MINOR_INT, \
 OSX_VERSION_MICRO_INT = [int(part) for part in OSX_VERSION_STR.split('.')]
 
 
+def _sanitize_xml(data):
+    pattern = re.compile(r'^(\s*?\<string\>)(.*?)(\<\/string\>.*?)$')
+    output = []
+
+    for i, line in enumerate(data.split('\n')):
+        chunk = line.decode('utf-8')
+        match = re.match(pattern, chunk)
+        if match:
+            start = match.group(1)
+            middle = match.group(2)
+            end = match.group(3)
+            needs_patch = False
+            # Inspect the line and see if it has invalid characters.
+            byte_list = bytearray([ord(byte) for byte in middle])
+            for byte in byte_list:
+                if byte < 32:
+                    needs_patch = True
+            if needs_patch:
+                middle = ''.join(['%02X' % byte for byte in byte_list])
+                new_line = '{start}{middle}{end}'.format(start=start,
+                                                         middle=middle,
+                                                         end=end)
+                output.append(new_line)
+            else:
+                output.append(line)
+        else:
+            output.append(line)
+    output = '\n'.join(output)
+
+    return output.encode('utf-8')
+
+
 def _ioreg_usb_devices(nodename=None):
     """Returns a list of USB device tree from ioreg"""
     import plistlib
@@ -38,6 +71,10 @@ def _ioreg_usb_devices(nodename=None):
         """Run ioreg command on specific node name"""
         cmd = ['ioreg', '-a', '-l', '-r', '-n', nodename]
         output = subprocess.check_output(cmd)
+        # ST-Link devices (and possibly others?) erroneously store binary data
+        # in the <string> serial number, which causes plistlib to blow up.
+        # This will convert that to hex and preserve contents otherwise.
+        output = _sanitize_xml(output)
         plist_data = []
         if output:
             try:
