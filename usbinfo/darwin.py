@@ -44,8 +44,10 @@ def _sanitize_xml(data):
        to ascii hex."""
     output = []
 
+    data = data.decode('utf-8')
+
     for i, line in enumerate(data.split('\n')):
-        chunk = line.decode('utf-8')
+        chunk = line
         match = re.match(sanitize_pattern, chunk)
         if match:
             start = match.group(1)
@@ -62,16 +64,14 @@ def _sanitize_xml(data):
                 new_line = '{start}{middle}{end}'.format(start=start,
                                                          middle=middle,
                                                          end=end)
-                output.append(new_line.encode('utf-8'))
+                output.append(new_line)
             else:
-                # Already encoded.
                 output.append(line)
         else:
-            # Already encoded
             output.append(line)
-    output = '\n'.join(output)
+    output = '\n'.join([line for line in output])
 
-    return output
+    return output.encode('utf-8')
 
 def _ioreg_usb_devices(nodename=None):
     """Returns a list of USB device tree from ioreg"""
