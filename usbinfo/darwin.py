@@ -18,6 +18,7 @@ Implementation of ``usbinfo`` for OS X-based systems.
 
 import copy
 import platform
+import re
 import subprocess
 
 from .posix import get_mounts
@@ -25,10 +26,57 @@ from .posix import get_mounts
 # platform.mac_ver()'s first tuple element encodes the OS X version,
 # such as 10.11.3.
 OSX_VERSION_STR = platform.mac_ver()[0]
-OSX_VERSION_MAJOR_INT, \
-OSX_VERSION_MINOR_INT, \
-OSX_VERSION_MICRO_INT = [int(part) for part in OSX_VERSION_STR.split('.')]
+OSX_VERSION_INFO = [int(part) for part in OSX_VERSION_STR.split('.')]
+OSX_VERSION_MAJOR_INT = OSX_VERSION_INFO[0]
+OSX_VERSION_MINOR_INT = OSX_VERSION_INFO[1]
+OSX_VERSION_MICRO_INT = 0
 
+if len(OSX_VERSION_INFO) >= 3:
+    OSX_VERSION_MICRO_INT = OSX_VERSION_INFO[2]
+
+
+sanitize_pattern = re.compile(r'^(\s*?\<string\>)(.*?)(\<\/string\>.*?)$')
+
+def _sanitize_xml(data):
+    """Takes an plist (xml) and checks <string> defintions for control characters.
+
+       If a control character is found, the string is converted to hexidecimal.
+       For ST-Link devices, this properly displays the serial number, which 
+       is eroneously encoded as binary data, which causes the plistlib XML parser
+       to crash.
+
+       Returns the same document, with any mis-encoded <string> values converted 
+       to ascii hex."""
+    output = []
+
+    data = data.decode('utf-8')
+
+    for i, line in enumerate(data.split('\n')):
+        chunk = line
+        match = re.match(sanitize_pattern, chunk)
+        if match:
+            start = match.group(1)
+            middle = match.group(2)
+            end = match.group(3)
+            needs_patch = False
+            # Inspect the line and see if it has invalid characters.
+            byte_list = bytearray([ord(byte) for byte in middle])
+            for byte in byte_list:
+                if byte < 32:
+                    needs_patch = True
+            if needs_patch:
+                middle = ''.join(['%02X' % byte for byte in byte_list])
+                new_line = '{start}{middle}{end}'.format(start=start,
+                                                         middle=middle,
+                                                         end=end)
+                output.append(new_line)
+            else:
+                output.append(line)
+        else:
+            output.append(line)
+    output = '\n'.join([line for line in output])
+
+    return output.encode('utf-8')
 
 def _ioreg_usb_devices(nodename=None):
     """Returns a list of USB device tree from ioreg"""
@@ -38,9 +86,17 @@ def _ioreg_usb_devices(nodename=None):
         """Run ioreg command on specific node name"""
         cmd = ['ioreg', '-a', '-l', '-r', '-n', nodename]
         output = subprocess.check_output(cmd)
+        # ST-Link devices (and possibly others?) erroneously store binary data
+        # in the <string> serial number, which causes plistlib to blow up.
+        # This will convert that to hex and preserve contents otherwise.
+        output = _sanitize_xml(output)
+        plist_data = []
         if output:
-            return plistlib.readPlistFromString(output)
-        return []
+            try:
+                plist_data = plistlib.readPlistFromString(output)
+            except AttributeError as e:
+                plist_data = plistlib.loads(output)
+        return plist_data
 
     if nodename is None:
         xhci = _ioreg('AppleUSBXHCI')
@@ -97,7 +153,7 @@ def _extra_if_info(node):
     info = {}
 
     for child in node.get('IORegistryEntryChildren', []):
-        for class_name, handler in ioclass_handlers.iteritems():
+        for class_name, handler in iter(ioclass_handlers.items()):
             if child.get('IOObjectClass') == class_name:
                 info.update(handler(child))
         info.update(_extra_if_info(child))
