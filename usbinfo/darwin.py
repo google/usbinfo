@@ -26,9 +26,14 @@ from .posix import get_mounts
 # platform.mac_ver()'s first tuple element encodes the OS X version,
 # such as 10.11.3.
 OSX_VERSION_STR = platform.mac_ver()[0]
-OSX_VERSION_MAJOR_INT, \
-OSX_VERSION_MINOR_INT, \
-OSX_VERSION_MICRO_INT = [int(part) for part in OSX_VERSION_STR.split('.')]
+OSX_VERSION_INFO = [int(part) for part in OSX_VERSION_STR.split('.')]
+OSX_VERSION_MAJOR_INT = OSX_VERSION_INFO[0]
+OSX_VERSION_MINOR_INT = OSX_VERSION_INFO[1]
+OSX_VERSION_MICRO_INT = 0
+
+if len(OSX_VERSION_INFO) >= 3:
+    OSX_VERSION_MICRO_INT = OSX_VERSION_INFO[2]
+
 
 sanitize_pattern = re.compile(r'^(\s*?\<string\>)(.*?)(\<\/string\>.*?)$')
 
