@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Implementation of ``usbinfo`` for Linux-based systems.
-"""
+"""Implementation of ``usbinfo`` for Linux-based systems."""
 
 import pyudev
 
 from .posix import get_mounts
 
 
-def usbinfo():
-    """
-    Helper for usbinfo on Linux.
-    """
+def usbinfo(decode_model=False, **kwargs):
+    """Helper for usbinfo on Linux.
 
+    Args:
+        decode_model: Due to versions <=1.0.2 incorrectly using ID_MODEL, this
+            allows for the newer API to return the proper product name.
+        **kwargs: Additional keyword arguments specific to platform
+            implementation.
+    """
     info_list = []
 
     _mounts = get_mounts()
@@ -45,14 +47,21 @@ def usbinfo():
         except StopIteration:
             break
 
+        if decode_model:
+            id_product = device.get('ID_MODEL_ENC', u'').decode('string_escape')
+            id_vendor = device.get('ID_VENDOR_ENC', u'').decode('string_escape')
+        else:
+            id_product = device.get('ID_MODEL', u'')
+            id_vendor = device.get('ID_VENDOR', u'')
         devinfo = {
             'bInterfaceNumber': device.get('ID_USB_INTERFACE_NUM', u''),
-            'iManufacturer': device.get('ID_VENDOR', u''),
-            'idVendor': device.get('ID_VENDOR_ID', u''),
-            'iProduct': device.get('ID_MODEL', u''),
-            'idProduct': device.get('ID_MODEL_ID', u''),
-            'iSerialNumber': device.get('ID_SERIAL_SHORT', u''),
+            'bDeviceClass': device.attributes.get('bDeviceClass'),
             'devname': device.get('DEVNAME', u''),
+            'iManufacturer': id_vendor,
+            'iProduct': id_product,
+            'iSerialNumber': device.get('ID_SERIAL_SHORT', u''),
+            'idProduct': device.get('ID_MODEL_ID', u''),
+            'idVendor': device.get('ID_VENDOR_ID', u''),
         }
 
         mount = _mounts.get(device.get('DEVNAME'))

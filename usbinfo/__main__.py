@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This script allows for gathering of information of endpoints on the USB
+"""This script allows for gathering of information of endpoints on the USB
 subsystem from the command line. When invoked without any arguments, it prints
 a tabular representation of attached USB endpoints.
 """
@@ -29,8 +28,10 @@ import sys
 PLATFORM = platform.system()
 
 def _max_width(string_list):
-    """
-    Helper to return the width of the longest string.
+    """Helper to return the width of the longest string.
+
+    Args:
+        string_list: List of strings to search.
     """
     return max([len(item) for item in string_list])
 
@@ -38,8 +39,10 @@ def _max_width(string_list):
 def _print_header(endpoints=False):
     """Return the print header as an OrderedDict
 
-    :param bool endpoints:
-        If True, print the number of endpoints.
+    Args:
+        endpoints: If True, print the number of endpoints.
+    Returns:
+        The print header as an OrderedDict
     """
     import collections
     header = collections.OrderedDict((
@@ -65,8 +68,8 @@ def _print_header(endpoints=False):
 def print_csv(endpoints=False):
     """Print usbinfo results as CSV.
 
-    :param bool endpoints:
-        If True, print the number of endpoints.
+    Args:
+        endpoints: If True, print the number of endpoints.
     """
     devices = usbinfo.usbinfo()
     header = _print_header(endpoints)
@@ -89,8 +92,8 @@ def print_csv(endpoints=False):
 def print_standard(endpoints=False):
     """Print standard usbinfo results.
 
-    :param bool endpoints:
-        If True, print the number of endpoints.
+    Args:
+        endpoints: If True, print the number of endpoints.
     """
     devices = usbinfo.usbinfo()
     header = _print_header(endpoints)
@@ -134,19 +137,28 @@ def print_standard(endpoints=False):
 
 
 def endpoints_total():
-    """Return the total number of endpoints used"""
+    """Return the total number of endpoints used.
+
+    Returns:
+        The total number of endpoints used
+    """
     devices = usbinfo.usbinfo()
     return sum(int(dev['bNumEndpoints']) for dev in devices)
 
 
 def _parse_options(args):
-    """Parse command line options"""
+    """Parse command line options.
+
+    Args:
+        args: Command line arguments to parse.
+    Returns:
+        Parsed options.
+    """
     if args is None:
         args = sys.argv[1:]
 
     class DefaultOptions(object):
-        """
-        Set default values for arguments not available on certain platform.
+        """Set default values for arguments not available on certain platform.
         """
         def __init__(self):
             self.csv = False
@@ -178,7 +190,7 @@ def _parse_options(args):
 
 
 def main(args=None):
-    """Main function"""
+    """Main function."""
     options = _parse_options(args)
 
     if options.endpoint_total:

@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Implementation of ``usbinfo`` for OS X-based systems.
-"""
+"""Implementation of ``usbinfo`` for OS X-based systems."""
 
 import copy
 import platform
@@ -25,21 +23,24 @@ from .posix import get_mounts
 # platform.mac_ver()'s first tuple element encodes the OS X version,
 # such as 10.11.3.
 OSX_VERSION_STR = platform.mac_ver()[0]
-OSX_VERSION_MAJOR_INT, \
-OSX_VERSION_MINOR_INT, \
-OSX_VERSION_MICRO_INT = [int(part) for part in OSX_VERSION_STR.split('.')]
+OSX_VERSION_TUPLE = tuple([int(part) for part in OSX_VERSION_STR.split('.')])
 
 
 def _ioreg_usb_devices(nodename=None):
-    """Returns a list of USB device tree from ioreg"""
+    """Returns a list of USB device tree from ioreg."""
     import plistlib
 
+    if (sys.version_info > (3, 0)):
+        plist_loads = plistlib.loads
+    else:
+        plist_loads = plistlib.readPlistFromString
+
     def _ioreg(nodename):
-        """Run ioreg command on specific node name"""
+        """Run ioreg command on specific node name."""
         cmd = ['ioreg', '-a', '-l', '-r', '-n', nodename]
         output = subprocess.check_output(cmd)
         if output:
-            return plistlib.readPlistFromString(output)
+            return plist_loads(output)
         return []
 
     if nodename is None:
@@ -50,7 +51,7 @@ def _ioreg_usb_devices(nodename=None):
         ioreg = _ioreg(nodename)
 
     def _usb_device(node):
-        """Recursively find USB devices and return a list of them"""
+        """Recursively find USB devices and return a list of them."""
         devices = []
         if 'sessionID' in node:
             devices.append(node)
@@ -68,12 +69,9 @@ def _ioreg_usb_devices(nodename=None):
 
 
 def _extra_if_info(node):
-    """
-    Given an interface node, find more information about the interface based
-    on the interface type.
-    """
+    """Returns extra information about a given interface based on its type."""
     def _serial_bsd_client(node):
-        """Get serial device path"""
+        """Get serial device path."""
         devname = node.get('IODialinDevice')
         if devname is not None:
             return {'devname': devname}
@@ -81,7 +79,7 @@ def _extra_if_info(node):
         return {}
 
     def _disk_partition(node):
-        """Get the disk partition path"""
+        """Get the disk partition path."""
         for child in node.get('IORegistryEntryChildren', []):
             devname = child.get('BSD Name')
             if devname is not None:
@@ -97,7 +95,7 @@ def _extra_if_info(node):
     info = {}
 
     for child in node.get('IORegistryEntryChildren', []):
-        for class_name, handler in ioclass_handlers.iteritems():
+        for class_name, handler in iter(ioclass_handlers.items()):
             if child.get('IOObjectClass') == class_name:
                 info.update(handler(child))
         info.update(_extra_if_info(child))
@@ -106,9 +104,7 @@ def _extra_if_info(node):
 
 
 def _match_node_property(node, key, value):
-    """Recursively search node to find an entry that matches key and value.
-       Return matched entry.
-    """
+    """Recursively finds a particular key-value pair in node."""
     retval = None
 
     for child in node.get('IORegistryEntryChildren', []):
@@ -123,16 +119,20 @@ def _match_node_property(node, key, value):
     return retval
 
 
-def usbinfo():
-    """Return a list of device and interface information for each USB device.
+def usbinfo(**kwargs):
+    """Return a list of device and information for each USB device.
+
+    Args:
+        **kwargs: Additional keyword arguments specific to platform
+            implementation.
     """
     info_list = []
 
     _mounts = get_mounts()
 
-    if OSX_VERSION_MINOR_INT >= 11:
-        _el_capitan_extras = \
-                _ioreg_usb_devices('XHC1') + _ioreg_usb_devices('EHC1')
+    if OSX_VERSION_TUPLE >= (10, 11):
+        _el_capitan_extras = (_ioreg_usb_devices('XHC1')
+                              + _ioreg_usb_devices('EHC1'))
 
     for node in _ioreg_usb_devices():
         # Capture device-level information
@@ -179,7 +179,7 @@ def usbinfo():
                 # under 'XHC1' or 'EHC1'. We first need to find the
                 # corresponding node under these trees, then run _extra_if_info
                 # to fill in the extra information.
-                if OSX_VERSION_MINOR_INT >= 11:
+                if OSX_VERSION_TUPLE >= (10, 11):
                     for extra_node in _el_capitan_extras:
                         _node = _match_node_property(
                             extra_node,

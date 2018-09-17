@@ -21,8 +21,8 @@ from setuptools import setup
 
 PKG_NAME = 'usbinfo'
 PKG_VERSION_MAJOR = 1
-PKG_VERSION_MINOR = 0
-PKG_VERSION_MICRO = 2
+PKG_VERSION_MINOR = 1
+PKG_VERSION_MICRO = 0
 PKG_VERSION = '{major}.{minor}.{micro}'.format(
     major=PKG_VERSION_MAJOR,
     minor=PKG_VERSION_MINOR,
