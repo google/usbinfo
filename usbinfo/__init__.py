@@ -149,6 +149,7 @@ def _usbinfo_dict_to_endpoint(ep_dict):
         value = ep_dict.get(key, '')
         if value.isdigit():
             return int(value, 16)
+        return None
 
     return Endpoint(
         devname=ep_dict.get('devname', None),
