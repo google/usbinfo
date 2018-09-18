@@ -145,20 +145,18 @@ def _usbinfo_dict_to_endpoint(ep_dict):
         An Endpoint object representing the input dictionary.
     """
     def cast_int(key):
-        """Cast value of key to int or fall back to None."""
+        """Cast value of key to int or fallback to None."""
         value = ep_dict.get(key, '')
         if value.isdigit():
             return int(value, 16)
-
-    interface = cast_int('bInterfaceNumber')
 
     return Endpoint(
         devname=ep_dict.get('devname', None),
         id_product=int(ep_dict.get('idProduct'), 16),
         id_vendor=int(ep_dict.get('idVendor'), 16),
-        interface=interface,
+        interface=cast_int('bInterfaceNumber'),
         mount=ep_dict.get('mount', None),
-        num_endpoints=ep_dict.get('bNumEndpoints', None),
+        num_endpoints=cast_int('bNumEndpoints'),
         product=ep_dict.get('iProduct', None),
         serial_number=ep_dict.get('iSerialNumber', None),
         vendor=ep_dict.get('iManufacturer', None))
