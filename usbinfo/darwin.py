@@ -17,6 +17,7 @@
 import copy
 import platform
 import subprocess
+import sys
 
 from .posix import get_mounts
 
