@@ -28,7 +28,6 @@ PKG_VERSION = '{major}.{minor}.{micro}'.format(
     minor=PKG_VERSION_MINOR,
     micro=PKG_VERSION_MICRO)
 PKG_AUTHOR = ', '.join(['Toshiro Yamada', 'Jeff Herman'])
-PKG_AUTHOR_EMAIL = ', '.join(['toshiro@nestlabs.com', 'jeff@nestlabs.com'])
 PKG_DESC = 'Module for introspecting USB devices on a system'
 
 PKG_LONG_DESC = """
@@ -47,7 +46,6 @@ def main():
         version=PKG_VERSION,
         packages=['usbinfo'],
         author=PKG_AUTHOR,
-        author_email=PKG_AUTHOR_EMAIL,
         description=PKG_DESC,
         long_description=PKG_LONG_DESC,
         license='Apache 2 license',
