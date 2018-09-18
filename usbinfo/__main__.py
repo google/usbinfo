@@ -27,15 +27,6 @@ import sys
 
 PLATFORM = platform.system()
 
-def _max_width(string_list):
-    """Helper to return the width of the longest string.
-
-    Args:
-        string_list: List of strings to search.
-    """
-    return max([len(item) for item in string_list])
-
-
 def _print_header(endpoints=False):
     """Return the print header as an OrderedDict
 
@@ -100,12 +91,9 @@ def print_standard(endpoints=False):
 
     devices.insert(0, header)
 
-    manufacturer_width = \
-            _max_width(dev['iManufacturer'] for dev in devices)
-    product_width = \
-            _max_width(dev['iProduct'] for dev in devices)
-    device_serial_width = \
-            _max_width(dev['iSerialNumber']for dev in devices)
+    manufacturer_width = max(len(dev['iManufacturer']) for dev in devices)
+    product_width = max(len(dev['iProduct']) for dev in devices)
+    device_serial_width = max(len(dev['iSerialNumber']) for dev in devices)
 
     header_format = u'{vid}:{pid} {manufacturer} {product} {serno} {ifcno}'
 

@@ -188,7 +188,7 @@ def endpoints(**filters):
 
     Args:
         **filters: A key-value list of filters where the value type is one of
-            `str`, `int`, or a compiled regular expression.
+            `str`, `int`, or `NoneType`.
     Returns:
         A list of Endpoint objects that match filters.
     """
