@@ -144,10 +144,14 @@ def _usbinfo_dict_to_endpoint(ep_dict):
     Returns:
         An Endpoint object representing the input dictionary.
     """
-    try:
-        interface = int(ep_dict.get('bInterfaceNumber', None), 16)
-    except ValueError:
-        interface = None
+    def cast_int(key):
+        """Cast value of key to int or fall back to None."""
+        value = ep_dict.get(key, '')
+        if value.isdigit():
+            return int(value, 16)
+
+    interface = cast_int('bInterfaceNumber')
+
     return Endpoint(
         devname=ep_dict.get('devname', None),
         id_product=int(ep_dict.get('idProduct'), 16),

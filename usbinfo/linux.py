@@ -55,7 +55,6 @@ def usbinfo(decode_model=False, **kwargs):
             id_vendor = device.get('ID_VENDOR', u'')
         devinfo = {
             'bInterfaceNumber': device.get('ID_USB_INTERFACE_NUM', u''),
-            'bDeviceClass': device.attributes.get('bDeviceClass'),
             'devname': device.get('DEVNAME', u''),
             'iManufacturer': id_vendor,
             'iProduct': id_product,
