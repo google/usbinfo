@@ -73,6 +73,10 @@ def main():
             'Topic :: Terminals',
         ],
         install_requires=[],
+        setup_requires=['pytest-runner'],
+        tests_require=[
+            'pytest',
+        ],
         entry_points={
             'console_scripts': [
                 'usbinfo = usbinfo.__main__:main'
