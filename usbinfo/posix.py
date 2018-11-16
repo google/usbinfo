@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Definitions common to all POSIX-compliant systems.
-"""
+"""Definitions common to all POSIX-compliant systems."""
 
 import re
 import subprocess
 
 
 def get_mounts():
-    """Return a dictionary of mounted partitions"""
+    """Return a dictionary of mounted partitions.
+
+    Returns:
+        A dictionary of mounted partitions.
+    """
     mounts = dict()
 
     pat = re.compile(br'([^\s]*) on (.*?) (?:\(|type)')
