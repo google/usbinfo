@@ -48,8 +48,8 @@ def usbinfo(decode_model=False, **kwargs):
             break
 
         if decode_model:
-            id_product = device.get('ID_MODEL_ENC', u'').decode('string_escape')
-            id_vendor = device.get('ID_VENDOR_ENC', u'').decode('string_escape')
+            id_product = _decode(device.get('ID_MODEL_ENC', u''))
+            id_vendor = _decode(device.get('ID_VENDOR_ENC', u''))
         else:
             id_product = device.get('ID_MODEL', u'')
             id_vendor = device.get('ID_VENDOR', u'')
@@ -70,3 +70,27 @@ def usbinfo(decode_model=False, **kwargs):
         info_list.append(devinfo)
 
     return info_list
+
+def _decode(unicode_str):
+    """Decode malformed unicode strings from pyudev.
+
+    ID_MODEL_ENC and ID_VENDOR_ENC could return values as:
+
+      u'Natural\xae\\x20Ergonomic\\x20Keyboard\\x204000'
+
+    which would raise a UnicodeEncodeError. To work around this, the string
+    is first fixed by replacing any extended-ASCII characters with an escaped
+    character string.
+
+    Args:
+        unicode_str: Unicode string to decode.
+
+    Returns:
+        A decoded string.
+    """
+    def _escape(c):
+        return '\\x00\\x%02x' % ord(c)
+
+    fixed_str = ''.join(
+        [c if ord(c) < 128 else '\\x%02x' % ord(c) for c in unicode_str])
+    return fixed_str.decode('string_escape')
