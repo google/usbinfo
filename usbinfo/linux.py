@@ -88,9 +88,6 @@ def _decode(unicode_str):
     Returns:
         A decoded string.
     """
-    def _escape(c):
-        return '\\x00\\x%02x' % ord(c)
-
     fixed_str = ''.join(
         [c if ord(c) < 128 else '\\x%02x' % ord(c) for c in unicode_str])
     return fixed_str.decode('string_escape')
