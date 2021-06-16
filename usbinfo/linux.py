@@ -35,18 +35,7 @@ def usbinfo(decode_model=False, **kwargs):
     context = pyudev.Context()
     devices = context.list_devices().match_property('ID_BUS', 'usb')
 
-    device_it = devices.__iter__()
-
-    while True:
-        try:
-            # We need to manually get the next item in the iterator because
-            # pyudev.device may throw an exception
-            device = next(device_it)
-        except pyudev.device.DeviceNotFoundError:
-            continue
-        except StopIteration:
-            break
-
+    for device in devices:
         if decode_model:
             id_product = _decode(device.get('ID_MODEL_ENC', u''))
             id_vendor = _decode(device.get('ID_VENDOR_ENC', u''))
@@ -56,6 +45,7 @@ def usbinfo(decode_model=False, **kwargs):
         devinfo = {
             'bInterfaceNumber': device.get('ID_USB_INTERFACE_NUM', u''),
             'devname': device.get('DEVNAME', u''),
+            'devpath': device.get('DEVPATH', u''),
             'iManufacturer': id_vendor,
             'iProduct': id_product,
             'iSerialNumber': device.get('ID_SERIAL_SHORT', u''),
